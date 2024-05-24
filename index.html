@@ -9,36 +9,52 @@
   <button id="checkInButton">Check-in</button>
 
   <script>
+    // Cache DOM references
+    const checkInButton = document.getElementById('checkInButton');
+
+    // Function to handle check-in
+    async function handleCheckIn() {
+      try {
+        const profile = await liff.getProfile();
+        const position = await getCurrentPosition();
+        const data = {
+          lineId: profile.userId,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        };
+        const response = await sendDataToAppsScript(data);
+        if (response.status === 'success') {
+          alert('Check-in successful!');
+        } else {
+          alert('Check-in failed.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Check-in failed. Please try again later.');
+      }
+    }
+
+    // Function to get current position
+    function getCurrentPosition() {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+    }
+
+    // Function to send data to Apps Script
+    function sendDataToAppsScript(data) {
+      return fetch('https://script.google.com/macros/s/AKfycbwb0sJ2lRsKdo7Lg9K_SZHXD2yqPOnPAhcxacZUM0FdHJn38lMCvujIrFgfz2F5uGn7/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(response => response.json());
+    }
+
     // LIFF initialization
     liff.init({ liffId: "2005389167-65RjV82G" })
       .then(() => {
-        // Get the user's profile and send data to the Apps Script
-        document.getElementById('checkInButton').addEventListener('click', function() {
-          liff.getProfile()
-            .then(profile => {
-              navigator.geolocation.getCurrentPosition(function(position) {
-                var data = {
-                  lineId: profile.userId,
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude
-                };
-                fetch('https://script.google.com/macros/s/AKfycbwb0sJ2lRsKdo7Lg9K_SZHXD2yqPOnPAhcxacZUM0FdHJn38lMCvujIrFgfz2F5uGn7/exec', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(data => {
-                  if (data.status === 'success') {
-                    alert('Check-in successful!');
-                  } else {
-                    alert('Check-in failed.');
-                  }
-                });
-              });
-            })
-            .catch(err => console.error(err));
-        });
+        // Attach event listener to check-in button
+        checkInButton.addEventListener('click', handleCheckIn);
       })
       .catch(err => console.error(err));
   </script>

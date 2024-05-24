@@ -14,30 +14,30 @@
 
     // Function to handle check-in
     async function handleCheckIn() {
-  try {
-    const profile = await liff.getProfile();
-    const position = await getCurrentPosition();
-    const data = {
-      lineId: profile.userId,
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude
-    };
-    const response = await sendDataToAppsScript(data);
-    if (response.status === 'success') {
-      alert('Check-in successful!');
-    } else {
-      alert('Check-in failed.');
+      try {
+        await liff.init({ liffId: "2005389167-65RjV82G" });
+        const profile = await liff.getProfile();
+        const position = await getCurrentPosition();
+        const data = {
+          lineId: profile.userId,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        };
+        const response = await sendDataToAppsScript(data);
+        if (response.status === 'success') {
+          alert('Check-in successful!');
+        } else {
+          alert('Check-in failed.');
+        }
+      } catch (err) {
+        console.error(err); // Log the error details
+        if (err instanceof GeolocationPositionError) {
+          alert('Failed to retrieve your location. Please make sure location services are enabled.');
+        } else {
+          alert('Check-in failed. Please try again later.');
+        }
+      }
     }
-  } catch (err) {
-    console.error(err); // Log the error details
-    if (err instanceof GeolocationPositionError) {
-      alert('Failed to retrieve your location. Please make sure location services are enabled.');
-    } else {
-      alert('Check-in failed. Please try again later.');
-    }
-  }
-}
-
 
     // Function to get current position
     function getCurrentPosition() {
@@ -55,13 +55,8 @@
       }).then(response => response.json());
     }
 
-    // LIFF initialization
-    liff.init({ liffId: "2005389167-65RjV82G" })
-      .then(() => {
-        // Attach event listener to check-in button
-        checkInButton.addEventListener('click', handleCheckIn);
-      })
-      .catch(err => console.error(err));
+    // Attach event listener to check-in button
+    checkInButton.addEventListener('click', handleCheckIn);
   </script>
 </body>
 </html>

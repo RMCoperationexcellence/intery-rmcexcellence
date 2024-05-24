@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Check-in</title>
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+</head>
+<body>
+  <h1>Check-in</h1>
+  <button id="checkInButton">Check-in</button>
+
+  <script>
+    // LIFF initialization
+    liff.init({ liffId: "YOUR_LIFF_ID" })
+      .then(() => {
+        // Get the user's profile and send data to the Apps Script
+        document.getElementById('checkInButton').addEventListener('click', function() {
+          liff.getProfile()
+            .then(profile => {
+              navigator.geolocation.getCurrentPosition(function(position) {
+                var data = {
+                  lineId: profile.userId,
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude
+                };
+                fetch('https://script.google.com/macros/s/AKfycbwb0sJ2lRsKdo7Lg9K_SZHXD2yqPOnPAhcxacZUM0FdHJn38lMCvujIrFgfz2F5uGn7/exec', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.status === 'success') {
+                    alert('Check-in successful!');
+                  } else {
+                    alert('Check-in failed.');
+                  }
+                });
+              });
+            })
+            .catch(err => console.error(err));
+        });
+      })
+      .catch(err => console.error(err));
+  </script>
+</body>
+</html>

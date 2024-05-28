@@ -1,62 +1,405 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Check-in</title>
-  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>บันทึกลงเวลาสหกิจ CPAC 2024</title>
+    <!-- Google Font - Kanit -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            font-family: "Kanit", sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-send {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-send:hover {
+            background-color: #0056b3;
+        }
+
+        #currentTime {
+            font-size: 18px;
+            color: #6c757d;
+        }
+    </style>
 </head>
+
 <body>
-  <h1>Check-in</h1>
-  <button id="checkInButton">Check-in</button>
+    <div class="container" style="margin-left: 10px; margin-right: 10px">
+        <div class="text-center mb-4">
+            <h1 style="text-align: center">บันทึกลงเวลาสหกิจ<br />SCG CPAC 2024</h1>
+            <br />
+            <p id="currentTime"></p>
+        </div>
+        <div class="text-center mb-4">
+            <img
+          id="profileImage"
+          src=""
+          alt="Profile Picture"
+          style="width: 150px; height: 150px; border-radius: 100%"
+        />
+        </div>
+        <div class="row mt-3">
+            <div class="col text-center">
+                <select
+            id="locationSelect"
+            class="form-select"
+            aria-label="Default select example"
+          >
+            <option selected>เลือกสถานที่</option>
+            <option value="บางซื่อ">SCG บางซือ</option>
+            <option value="บางซ่อน">CPAC บางซ่อน</option>
+          </select>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col text-center">
+                <button
+            class="btn btn-send"
+            onclick="confirmAndSendData('เข้างาน')"
+            style="margin-bottom: 10px; margin-top: 10px"
+          >
+            บันทึกเข้างาน</button><br />
+                <button
+            class="btn btn-danger"
+            onclick="confirmAndSendData('ออกงาน')"
+            style="margin-top: 10px"
+          >
+            บันทึกออกงาน
+          </button>
+            </div>
+        </div>
+    </div>
+</body>
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+    integrity="sha384-xEmA2IB9ixuj4AKtcOckPcPIBMZoHx24A0DdC3k/7OtAdyO0lFT6TcY8p4EFLmtr" crossorigin="anonymous">
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
+    integrity="sha384-Znwayk5rGVVmGwEZ/zE32FJ6sl3JBIWtfGY1g4X7Wip2W5XlP7KLJiLUgYpzgzw1" crossorigin="anonymous">
+</script>
+<!-- LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/versions/2.15.0/sdk.js"></script>
+<script>
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Radius of the earth in km
+      const dLat = deg2rad(lat2 - lat1);
+      const dLon = deg2rad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) *
+          Math.cos(deg2rad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c; // Distance in km
+      return distance * 1000; // Distance in meters
+    }
 
-  <script>
-    // Cache DOM references
-    const checkInButton = document.getElementById('checkInButton');
+    function deg2rad(deg) {
+      return deg * (Math.PI / 180);
+    }
 
-    // Function to handle check-in
-    async function handleCheckIn() {
-      try {
-        await liff.init({ liffId: "2005389167-65RjV82G" });
-        const profile = await liff.getProfile();
-        const position = await getCurrentPosition();
-        const data = {
-          lineId: profile.userId,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        };
-        const response = await sendDataToAppsScript(data);
-        if (response.status === 'success') {
-          alert('Check-in successful!');
-        } else {
-          alert('Check-in failed.');
-        }
-      } catch (err) {
-        console.error(err); // Log the error details
-        if (err instanceof GeolocationPositionError) {
-          alert('Failed to retrieve your location. Please make sure location services are enabled.');
-        } else {
-          alert('Check-in failed. Please try again later.');
-        }
+    let userProfile = {};
+    let currentLocation = {};
+
+    const bangsonLatitude = 13.8184219;
+    const bangsonLongitude = 100.5157818;
+
+    const bangsueLatitude = 13.805602;
+    const bangsueLongitude = 100.537569;
+
+    function checkDistance() {
+      const selectedLocation = document.getElementById("locationSelect").value;
+      let targetLatitude, targetLongitude;
+
+      if (selectedLocation === "บางซ่อน") {
+        targetLatitude = bangsonLatitude;
+        targetLongitude = bangsonLongitude;
+      } else if (selectedLocation === "บางซื่อ") {
+        targetLatitude = bangsueLatitude;
+        targetLongitude = bangsueLongitude;
+      } else {
+        console.error("Invalid location");
+        return;
+      }
+
+      const distance = calculateDistance(
+        currentLocation.latitude,
+        currentLocation.longitude,
+        targetLatitude,
+        targetLongitude
+      );
+
+      return distance <= 500 ? "ใช่" : "ไม่ใช่";
+    }
+
+    const userRealNames = {
+      Uce311278fb36c099634910f72e98b520: "นายเอกรัตน์ สุรสิทธิ์",
+      U8ef0d62e889f12b659a2cd3b33eaca26: "นางสาวอุษณีย์ เทียนสันเทียะ",
+      Ua85e04c353b18d56f86d9c345931b044: "นางสาวพรพรรณ ปฐมเอม",
+      U5a568ff55631272554fe5328282e82df: "นายกรวิชญ์ มุณีแก้ว",
+      U3b9c8e58b336f487521ad046af64723f: "นางสาวเกสรา ปราคำ",
+      U28857022da9216ac8cb4de3310cedfc1: "นายภูมินทร์ แคภูเขียว",
+      Ub0dd06d3d9ae258793fdcbe78b8d37d2: "นางสาวชลภา วาหะรักษ์",
+      U4f6634d2a85f28db9a627a7927bbb30f: "นายวงศพัทธ์ คำศิริ",
+      U7e637b5229c9215f624ba352389a890c: "นายภคทรรศน์ โลวะกิจ",
+      U6112812eecf6d831672c524df90b057c: "นางสาวกรรณิกา ปลั่งกลาง",
+      U9252ff43408389d6b5d3a18185c28853: "นายพัฒนชัย แจ่มประวิทย์",
+      U2d6e15170bc3c3796d5849b3bed70d74: "นายชัยอนันต์ คงสมลาภ",
+    };
+
+    function runApp() {
+      liff
+        .getProfile()
+        .then((profile) => {
+          userProfile = {
+            userId: profile.userId,
+            realName: userRealNames[profile.userId] || profile.displayName,
+            pictureUrl: profile.pictureUrl,
+          };
+          document.getElementById("profileImage").src = profile.pictureUrl;
+
+          // Request location access
+          requestLocationAccess();
+        })
+        .catch((err) => console.error(err));
+    }
+
+    function requestLocationAccess() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            currentLocation = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            };
+          },
+          (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+              Swal.fire({
+                icon: "error",
+                title: "การอนุญาตล้มเหลว",
+                text: "กรุณาอนุญาตให้แชร์พิกัดของคุณ",
+              }).then(() => {
+                requestLocationAccess();
+              });
+            } else {
+              console.error(error);
+            }
+          }
+        );
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "การอนุญาตล้มเหลว",
+          text: "อุปกรณ์ของคุณไม่รองรับการแชร์พิกัด",
+        });
       }
     }
 
-    // Function to get current position
-    function getCurrentPosition() {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
+    function confirmAndSendData(status) {
+      let selectedLocation = document.getElementById("locationSelect").value;
+      if (selectedLocation === "เลือกสถานที่") {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณาใส่ข้อมูลให้ครบ!",
+          text: "กรุณาเลือกสถานที่ก่อนที่จะบันทึกเวลา",
+        });
+        return;
+      }
+
+      if (!currentLocation.latitude || !currentLocation.longitude) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณาอนุญาตแชร์พิกัด",
+          text: "โปรดอนุญาตให้เข้าถึงตำแหน่งของคุณเพื่อบันทึกเวลา",
+        });
+        requestLocationAccess();
+        return;
+      }
+
+      const currentDate = new Date().toLocaleDateString();
+      const checkInKey = `checkIn_${currentDate}`;
+      const checkOutKey = `checkOut_${currentDate}`;
+
+      if (status === "เข้างาน" && getCookie(checkInKey)) {
+        Swal.fire({
+          icon: "warning",
+          title: "คุณได้บันทึกเข้างานแล้ว!",
+          text: "คุณสามารถบันทึกเข้างานได้เพียงครั้งเดียวต่อวัน",
+        });
+        return;
+      }
+
+      if (status === "ออกงาน" && getCookie(checkOutKey)) {
+        Swal.fire({
+          icon: "warning",
+          title: "คุณได้บันทึกออกงานแล้ว!",
+          text: "คุณสามารถบันทึกออกงานได้เพียงครั้งเดียวต่อวัน",
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: "คุณแน่ใจหรือไม่?",
+        text: `คุณต้องการบันทึก ${status} ใช่หรือไม่?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "ใช่, บันทึก!",
+        cancelButtonText: "ยกเลิก",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const distanceStatus = checkDistance();
+          sendData(status, checkInKey, checkOutKey, distanceStatus);
+        }
       });
     }
 
-    // Function to send data to Apps Script
-    function sendDataToAppsScript(data) {
-      return fetch('https://script.google.com/macros/s/AKfycbwPRXTVaCWaNAFz0OAysw74JhG0c0wr5YjbZ3agtre-jdb2HH5zEImLpGuXc91Jh_v9fg/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      }).then(response => response.json());
+    function sendData(status, checkInKey, checkOutKey, distanceStatus) {
+      let selectedLocation = document.getElementById("locationSelect").value;
+
+      Swal.fire({
+        title: "กำลังส่งข้อมูล...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        onBeforeOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      let data = {
+        ...userProfile,
+        status: status,
+        time: getCurrentTime(),
+        location: selectedLocation,
+        ...currentLocation,
+        distanceStatus: distanceStatus,
+        mapUrl: `https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`,
+      };
+
+      submitDataToGoogleSheets(data);
+
+      setTimeout(() => {
+        Swal.close();
+
+        if (status === "เข้างาน") {
+          setCookie(checkInKey, "true", 1);
+        } else if (status === "ออกงาน") {
+          setCookie(checkOutKey, "true", 1);
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "ส่งข้อมูลสำเร็จแล้ว!",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }, 2000); // Adjust this timeout according to your actual data sending process
     }
 
-    // Attach event listener to check-in button
-    checkInButton.addEventListener('click', handleCheckIn);
-  </script>
-</body>
+
+    function submitDataToGoogleSheets(data) {
+      fetch(
+        "https://script.google.com/macros/s/AKfycbz_jfHchjlW57lIPP1nG6LL5aYiVeZHWsPoOlaePAT2jc6AOiygKTLmCY6tyFC1MZK4/exec",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+          },
+          body: JSON.stringify(data),
+        }
+      )
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error(
+            "There was a problem with your fetch operation:",
+            error
+          );
+        });
+    }
+
+    function getCurrentTime() {
+      let now = new Date();
+      return now.toLocaleString();
+    }
+
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function getCookie(name) {
+      const cname = name + "=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(";");
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === " ") {
+          c = c.substring(1);
+        }
+        if (c.indexOf(cname) === 0) {
+          return c.substring(cname.length, c.length);
+        }
+      }
+      return "";
+    }
+
+    setInterval(function () {
+      document.getElementById("currentTime").innerText = getCurrentTime();
+    }, 1000);
+
+    liff.init(
+      {
+        liffId: "2005415459-X9WEZE2o",
+      },
+      () => {
+        if (liff.isLoggedIn()) {
+          runApp();
+        } else {
+          liff.login();
+        }
+      },
+      (err) => console.error(err.code, err.message)
+    );
+</script>
+
 </html>

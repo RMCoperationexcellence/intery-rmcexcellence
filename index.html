@@ -57,349 +57,380 @@
             <p id="currentTime"></p>
         </div>
         <div class="text-center mb-4">
-            <img
-          id="profileImage"
-          src=""
-          alt="Profile Picture"
-          style="width: 150px; height: 150px; border-radius: 100%"
-        />
+            <img id="profileImage" src="" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 100%" />
         </div>
         <div class="row mt-3">
             <div class="col text-center">
-                <select
-            id="locationSelect"
-            class="form-select"
-            aria-label="Default select example"
-          >
-            <option selected>เลือกสถานที่</option>
-            <option value="บางซื่อ">SCG บางซือ</option>
-            <option value="บางซ่อน">CPAC บางซ่อน</option>
-          </select>
+                <select id="locationSelect" class="form-select" aria-label="Default select example">
+                    <option selected>เลือกสถานที่</option>
+                    <option value="บางซื่อ">SCG บางซือ</option>
+                    <option value="บางซ่อน">CPAC บางซ่อน</option>
+                </select>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col text-center">
-                <button
-            class="btn btn-send"
-            onclick="confirmAndSendData('เข้างาน')"
-            style="margin-bottom: 10px; margin-top: 10px"
-          >
-            บันทึกเข้างาน</button><br />
-                <button
-            class="btn btn-danger"
-            onclick="confirmAndSendData('ออกงาน')"
-            style="margin-top: 10px"
-          >
-            บันทึกออกงาน
-          </button>
+                <button class="btn btn-send" onclick="confirmAndSendData('เข้างาน')" style="margin-bottom: 10px; margin-top: 10px">
+                    บันทึกเข้างาน
+                </button><br />
+                <button class="btn btn-danger" onclick="confirmAndSendData('ออกงาน')" style="margin-top: 10px">
+                    บันทึกออกงาน
+                </button>
             </div>
         </div>
     </div>
-</body>
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
-    integrity="sha384-xEmA2IB9ixuj4AKtcOckPcPIBMZoHx24A0DdC3k/7OtAdyO0lFT6TcY8p4EFLmtr" crossorigin="anonymous">
-</script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
-    integrity="sha384-Znwayk5rGVVmGwEZ/zE32FJ6sl3JBIWtfGY1g4X7Wip2W5XlP7KLJiLUgYpzgzw1" crossorigin="anonymous">
-</script>
-<!-- LIFF SDK -->
-<script src="https://static.line-scdn.net/liff/edge/versions/2.15.0/sdk.js"></script>
-<script>
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Radius of the earth in km
-      const dLat = deg2rad(lat2 - lat1);
-      const dLon = deg2rad(lon2 - lon1);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(deg2rad(lat1)) *
-          Math.cos(deg2rad(lat2)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c; // Distance in km
-      return distance * 1000; // Distance in meters
-    }
 
-    function deg2rad(deg) {
-      return deg * (Math.PI / 180);
-    }
+    <!-- PDPA Modal -->
+    <div class="modal fade" id="pdpaModal" tabindex="-1" aria-labelledby="pdpaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pdpaModalLabel">ข้อตกลงการใช้งานและความเป็นส่วนตัว</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>โปรดอ่านและยอมรับข้อตกลงการใช้งานและนโยบายความเป็นส่วนตัวของเรา</p>
+                    <p>[รายละเอียดของ PDPA]</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="acceptPDPA()">ยอมรับ</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    let userProfile = {};
-    let currentLocation = {};
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        integrity="sha384-xEmA2IB9ixuj4AKtcOckPcPIBMZoHx24A0DdC3k/7OtAdyO0lFT6TcY8p4EFLmtr" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
+        integrity="sha384-Znwayk5rGVVmGwEZ/zE32FJ6sl3JBIWtfGY1g4X7Wip2W5XlP7KLJiLUgYpzgzw1" crossorigin="anonymous">
+    </script>
+    <!-- LIFF SDK -->
+    <script src="https://static.line-scdn.net/liff/edge/versions/2.15.0/sdk.js"></script>
+    <script>
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the earth in km
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) *
+                Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c; // Distance in km
+            return distance * 1000; // Distance in meters
+        }
 
-    const bangsonLatitude = 13.8184219;
-    const bangsonLongitude = 100.5157818;
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180);
+        }
 
-    const bangsueLatitude = 13.805602;
-    const bangsueLongitude = 100.537569;
+        let userProfile = {};
+        let currentLocation = {};
 
-    function checkDistance() {
-      const selectedLocation = document.getElementById("locationSelect").value;
-      let targetLatitude, targetLongitude;
+        const bangsonLatitude = 13.8184219;
+        const bangsonLongitude = 100.5157818;
 
-      if (selectedLocation === "บางซ่อน") {
-        targetLatitude = bangsonLatitude;
-        targetLongitude = bangsonLongitude;
-      } else if (selectedLocation === "บางซื่อ") {
-        targetLatitude = bangsueLatitude;
-        targetLongitude = bangsueLongitude;
-      } else {
-        console.error("Invalid location");
-        return;
-      }
+        const bangsueLatitude = 13.805602;
+        const bangsueLongitude = 100.537569;
 
-      const distance = calculateDistance(
-        currentLocation.latitude,
-        currentLocation.longitude,
-        targetLatitude,
-        targetLongitude
-      );
+        function checkDistance() {
+            const selectedLocation = document.getElementById("locationSelect").value;
+            let targetLatitude, targetLongitude;
 
-      return distance <= 500 ? "ใช่" : "ไม่ใช่";
-    }
-
-    const userRealNames = {
-      Uce311278fb36c099634910f72e98b520: "นายเอกรัตน์ สุรสิทธิ์",
-      U8ef0d62e889f12b659a2cd3b33eaca26: "นางสาวอุษณีย์ เทียนสันเทียะ",
-      Ua85e04c353b18d56f86d9c345931b044: "นางสาวพรพรรณ ปฐมเอม",
-      U5a568ff55631272554fe5328282e82df: "นายกรวิชญ์ มุณีแก้ว",
-      U3b9c8e58b336f487521ad046af64723f: "นางสาวเกสรา ปราคำ",
-      U28857022da9216ac8cb4de3310cedfc1: "นายภูมินทร์ แคภูเขียว",
-      Ub0dd06d3d9ae258793fdcbe78b8d37d2: "นางสาวชลภา วาหะรักษ์",
-      U4f6634d2a85f28db9a627a7927bbb30f: "นายวงศพัทธ์ คำศิริ",
-      U7e637b5229c9215f624ba352389a890c: "นายภคทรรศน์ โลวะกิจ",
-      U6112812eecf6d831672c524df90b057c: "นางสาวกรรณิกา ปลั่งกลาง",
-      U9252ff43408389d6b5d3a18185c28853: "นายพัฒนชัย แจ่มประวิทย์",
-      U2d6e15170bc3c3796d5849b3bed70d74: "นายชัยอนันต์ คงสมลาภ",
-    };
-
-    function runApp() {
-      liff
-        .getProfile()
-        .then((profile) => {
-          userProfile = {
-            userId: profile.userId,
-            realName: userRealNames[profile.userId] || profile.displayName,
-            pictureUrl: profile.pictureUrl,
-          };
-          document.getElementById("profileImage").src = profile.pictureUrl;
-
-          // Request location access
-          requestLocationAccess();
-        })
-        .catch((err) => console.error(err));
-    }
-
-    function requestLocationAccess() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            currentLocation = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            };
-          },
-          (error) => {
-            if (error.code === error.PERMISSION_DENIED) {
-              Swal.fire({
-                icon: "error",
-                title: "การอนุญาตล้มเหลว",
-                text: "กรุณาอนุญาตให้แชร์พิกัดของคุณ",
-              }).then(() => {
-                requestLocationAccess();
-              });
+            if (selectedLocation === "บางซ่อน") {
+                targetLatitude = bangsonLatitude;
+                targetLongitude = bangsonLongitude;
+            } else if (selectedLocation === "บางซื่อ") {
+                targetLatitude = bangsueLatitude;
+                targetLongitude = bangsueLongitude;
             } else {
-              console.error(error);
+                console.error("Invalid location");
+                return;
             }
-          }
+
+            const distance = calculateDistance(
+                currentLocation.latitude,
+                currentLocation.longitude,
+                targetLatitude,
+                targetLongitude
+            );
+
+            return distance <= 500 ? "ใช่" : "ไม่ใช่";
+        }
+
+        const userRealNames = {
+            Uce311278fb36c099634910f72e98b520: "นายเอกรัตน์ สุรสิทธิ์",
+            U8ef0d62e889f12b659a2cd3b33eaca26: "นางสาวอุษณีย์ เทียนสันเทียะ",
+            Ua85e04c353b18d56f86d9c345931b044: "นางสาวพรพรรณ ปฐมเอม",
+            U5a568ff55631272554fe5328282e82df: "นายกรวิชญ์ มุณีแก้ว",
+            U3b9c8e58b336f487521ad046af64723f: "นางสาวเกสรา ปราคำ",
+            U28857022da9216ac8cb4de3310cedfc1: "นายภูมินทร์ แคภูเขียว",
+            Ub0dd06d3d9ae258793fdcbe78b8d37d2: "นางสาวชลภา วาหะรักษ์",
+            U4f6634d2a85f28db9a627a7927bbb30f: "นายวงศพัทธ์ คำศิริ",
+            U7e637b5229c9215f624ba352389a890c: "นายภคทรรศน์ โลวะกิจ",
+            U6112812eecf6d831672c524df90b057c: "นางสาวกรรณิกา ปลั่งกลาง",
+            U9252ff43408389d6b5d3a18185c28853: "นายพัฒนชัย แจ่มประวิทย์",
+            U2d6e15170bc3c3796d5849b3bed70d74: "นายชัยอนันต์ คงสมลาภ",
+        };
+
+        function runApp() {
+            liff
+                .getProfile()
+                .then((profile) => {
+                    userProfile = {
+                        userId: profile.userId,
+                        realName: userRealNames[profile.userId] || profile.displayName,
+                        pictureUrl: profile.pictureUrl,
+                    };
+                    document.getElementById("profileImage").src = profile.pictureUrl;
+
+                    // Request location access
+                    requestLocationAccess();
+                })
+                .catch((err) => console.error(err));
+        }
+
+        function requestLocationAccess() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                        };
+                    },
+                    (error) => {
+                        if (error.code === error.PERMISSION_DENIED) {
+                            Swal.fire({
+                                icon: "error",
+                                title: "การอนุญาตล้มเหลว",
+                                text: "กรุณาอนุญาตให้แชร์พิกัดของคุณ",
+                            }).then(() => {
+                                requestLocationAccess();
+                            });
+                        } else {
+                            console.error(error);
+                        }
+                    }
+                );
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "การอนุญาตล้มเหลว",
+                    text: "อุปกรณ์ของคุณไม่รองรับการแชร์พิกัด",
+                });
+            }
+        }
+
+        function confirmAndSendData(status) {
+            let selectedLocation = document.getElementById("locationSelect").value;
+            if (selectedLocation === "เลือกสถานที่") {
+                Swal.fire({
+                    icon: "warning",
+                    title: "กรุณาใส่ข้อมูลให้ครบ!",
+                    text: "กรุณาเลือกสถานที่ก่อนที่จะบันทึกเวลา",
+                });
+                return;
+            }
+
+            if (!currentLocation.latitude || !currentLocation.longitude) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "กรุณาอนุญาตแชร์พิกัด",
+                    text: "โปรดอนุญาตให้เข้าถึงตำแหน่งของคุณเพื่อบันทึกเวลา",
+                });
+                requestLocationAccess();
+                return;
+            }
+
+            // Check PDPA acceptance
+            if (!getCookie("pdpaAccepted")) {
+                showPDPAModal();
+                return;
+            }
+
+            const currentDate = new Date().toLocaleDateString();
+            const checkInKey = `checkIn_${currentDate}`;
+            const checkOutKey = `checkOut_${currentDate}`;
+
+            if (status === "เข้างาน" && getCookie(checkInKey)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "คุณได้บันทึกเข้างานแล้ว!",
+                    text: "คุณสามารถบันทึกเข้างานได้เพียงครั้งเดียวต่อวัน",
+                });
+                return;
+            }
+
+            if (status === "ออกงาน" && getCookie(checkOutKey)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "คุณได้บันทึกออกงานแล้ว!",
+                    text: "คุณสามารถบันทึกออกงานได้เพียงครั้งเดียวต่อวัน",
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: "คุณแน่ใจหรือไม่?",
+                text: `คุณต้องการบันทึก ${status} ใช่หรือไม่?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "ใช่, บันทึก!",
+                cancelButtonText: "ยกเลิก",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const distanceStatus = checkDistance();
+                    sendData(status, checkInKey, checkOutKey, distanceStatus);
+                }
+            });
+        }
+
+        function sendData(status, checkInKey, checkOutKey, distanceStatus) {
+            let selectedLocation = document.getElementById("locationSelect").value;
+
+            Swal.fire({
+                title: "กำลังส่งข้อมูล...",
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                onBeforeOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
+            let data = {
+                ...userProfile,
+                status: status,
+                time: getCurrentTime(),
+                location: selectedLocation,
+                ...currentLocation,
+                distanceStatus: distanceStatus,
+                mapUrl: `https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`,
+            };
+
+            submitDataToGoogleSheets(data);
+
+            setTimeout(() => {
+                Swal.close();
+
+                if (status === "เข้างาน") {
+                    setCookie(checkInKey, "true", 1);
+                } else if (status === "ออกงาน") {
+                    setCookie(checkOutKey, "true", 1);
+                }
+
+                Swal.fire({
+                    icon: "success",
+                    title: "ส่งข้อมูลสำเร็จแล้ว!",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            }, 2000); // Adjust this timeout according to your actual data sending process
+        }
+
+        function submitDataToGoogleSheets(data) {
+            fetch(
+                "https://script.google.com/macros/s/AKfycbz_jfHchjlW57lIPP1nG6LL5aYiVeZHWsPoOlaePAT2jc6AOiygKTLmCY6tyFC1MZK4/exec",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "text/plain; charset=utf-8",
+                    },
+                    body: JSON.stringify(data),
+                }
+            )
+                .then((response) => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error("Network response was not ok.");
+                })
+                .then((data) => {
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error(
+                        "There was a problem with your fetch operation:",
+                        error
+                    );
+                });
+        }
+
+        function getCurrentTime() {
+            let now = new Date();
+            return now.toLocaleString();
+        }
+
+        function setCookie(name, value, days) {
+            const d = new Date();
+            d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+            const expires = "expires=" + d.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        function getCookie(name) {
+            const cname = name + "=";
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const ca = decodedCookie.split(";");
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === " ") {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(cname) === 0) {
+                    return c.substring(cname.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        function showPDPAModal() {
+            const pdpaModal = new bootstrap.Modal(document.getElementById('pdpaModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+            pdpaModal.show();
+        }
+
+        function acceptPDPA() {
+            setCookie("pdpaAccepted", "true", 365);
+            const pdpaModal = bootstrap.Modal.getInstance(document.getElementById('pdpaModal'));
+            pdpaModal.hide();
+        }
+
+        setInterval(function () {
+            document.getElementById("currentTime").innerText = getCurrentTime();
+        }, 1000);
+
+        liff.init(
+            {
+                liffId: "2005415459-X9WEZE2o",
+            },
+            () => {
+                if (liff.isLoggedIn()) {
+                    runApp();
+                } else {
+                    liff.login();
+                }
+            },
+            (err) => console.error(err.code, err.message)
         );
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "การอนุญาตล้มเหลว",
-          text: "อุปกรณ์ของคุณไม่รองรับการแชร์พิกัด",
+
+        // Check if PDPA is accepted, if not show the modal
+        window.addEventListener('load', () => {
+            if (!getCookie("pdpaAccepted")) {
+                showPDPAModal();
+            }
         });
-      }
-    }
-
-    function confirmAndSendData(status) {
-      let selectedLocation = document.getElementById("locationSelect").value;
-      if (selectedLocation === "เลือกสถานที่") {
-        Swal.fire({
-          icon: "warning",
-          title: "กรุณาใส่ข้อมูลให้ครบ!",
-          text: "กรุณาเลือกสถานที่ก่อนที่จะบันทึกเวลา",
-        });
-        return;
-      }
-
-      if (!currentLocation.latitude || !currentLocation.longitude) {
-        Swal.fire({
-          icon: "warning",
-          title: "กรุณาอนุญาตแชร์พิกัด",
-          text: "โปรดอนุญาตให้เข้าถึงตำแหน่งของคุณเพื่อบันทึกเวลา",
-        });
-        requestLocationAccess();
-        return;
-      }
-
-      const currentDate = new Date().toLocaleDateString();
-      const checkInKey = `checkIn_${currentDate}`;
-      const checkOutKey = `checkOut_${currentDate}`;
-
-      if (status === "เข้างาน" && getCookie(checkInKey)) {
-        Swal.fire({
-          icon: "warning",
-          title: "คุณได้บันทึกเข้างานแล้ว!",
-          text: "คุณสามารถบันทึกเข้างานได้เพียงครั้งเดียวต่อวัน",
-        });
-        return;
-      }
-
-      if (status === "ออกงาน" && getCookie(checkOutKey)) {
-        Swal.fire({
-          icon: "warning",
-          title: "คุณได้บันทึกออกงานแล้ว!",
-          text: "คุณสามารถบันทึกออกงานได้เพียงครั้งเดียวต่อวัน",
-        });
-        return;
-      }
-
-      Swal.fire({
-        title: "คุณแน่ใจหรือไม่?",
-        text: `คุณต้องการบันทึก ${status} ใช่หรือไม่?`,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "ใช่, บันทึก!",
-        cancelButtonText: "ยกเลิก",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const distanceStatus = checkDistance();
-          sendData(status, checkInKey, checkOutKey, distanceStatus);
-        }
-      });
-    }
-
-    function sendData(status, checkInKey, checkOutKey, distanceStatus) {
-      let selectedLocation = document.getElementById("locationSelect").value;
-
-      Swal.fire({
-        title: "กำลังส่งข้อมูล...",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        onBeforeOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      let data = {
-        ...userProfile,
-        status: status,
-        time: getCurrentTime(),
-        location: selectedLocation,
-        ...currentLocation,
-        distanceStatus: distanceStatus,
-        mapUrl: `https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`,
-      };
-
-      submitDataToGoogleSheets(data);
-
-      setTimeout(() => {
-        Swal.close();
-
-        if (status === "เข้างาน") {
-          setCookie(checkInKey, "true", 1);
-        } else if (status === "ออกงาน") {
-          setCookie(checkOutKey, "true", 1);
-        }
-
-        Swal.fire({
-          icon: "success",
-          title: "ส่งข้อมูลสำเร็จแล้ว!",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      }, 2000); // Adjust this timeout according to your actual data sending process
-    }
-
-
-    function submitDataToGoogleSheets(data) {
-      fetch(
-        "https://script.google.com/macros/s/AKfycbz_jfHchjlW57lIPP1nG6LL5aYiVeZHWsPoOlaePAT2jc6AOiygKTLmCY6tyFC1MZK4/exec",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain; charset=utf-8",
-          },
-          body: JSON.stringify(data),
-        }
-      )
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error("Network response was not ok.");
-        })
-        .then((data) => {
-          console.log(data);
-        })
-        .catch((error) => {
-          console.error(
-            "There was a problem with your fetch operation:",
-            error
-          );
-        });
-    }
-
-    function getCurrentTime() {
-      let now = new Date();
-      return now.toLocaleString();
-    }
-
-    function setCookie(name, value, days) {
-      const d = new Date();
-      d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
-      const expires = "expires=" + d.toUTCString();
-      document.cookie = name + "=" + value + ";" + expires + ";path=/";
-    }
-
-    function getCookie(name) {
-      const cname = name + "=";
-      const decodedCookie = decodeURIComponent(document.cookie);
-      const ca = decodedCookie.split(";");
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === " ") {
-          c = c.substring(1);
-        }
-        if (c.indexOf(cname) === 0) {
-          return c.substring(cname.length, c.length);
-        }
-      }
-      return "";
-    }
-
-    setInterval(function () {
-      document.getElementById("currentTime").innerText = getCurrentTime();
-    }, 1000);
-
-    liff.init(
-      {
-        liffId: "2005415459-X9WEZE2o",
-      },
-      () => {
-        if (liff.isLoggedIn()) {
-          runApp();
-        } else {
-          liff.login();
-        }
-      },
-      (err) => console.error(err.code, err.message)
-    );
-</script>
+    </script>
+</body>
 
 </html>

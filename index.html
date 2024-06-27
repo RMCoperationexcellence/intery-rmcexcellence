@@ -522,7 +522,7 @@
                     });
                 }}
             }
-        function sendData(status, checkInKey, checkOutKey, checkLeaveKey, distanceStatus, leaveType = '', leaveReason = '', lateReason = '') {
+        function sendData(status, checkInKey, checkOutKey, checkLeaveKey, distanceStatus, leaveType = '', leaveReason = '', leaveDuration = '', lateReason = '') {
             let selectedLocation = document.getElementById("locationSelect").value;
 
             Swal.fire({

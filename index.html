@@ -548,6 +548,10 @@
                 data.leaveReason = leaveReason;
             }
 
+            if (status === "เข้างาน") {
+                data.lateReason = lateReason;
+            }
+
             submitDataToGoogleSheets(data);
 
             setTimeout(() => {

@@ -274,22 +274,22 @@
             U2d6e15170bc3c3796d5849b3bed70d74: "นายชัยอนันต์ คงสมลาภ",
         };
 
-        // function runApp() {
-        //     liff
-        //         .getProfile()
-        //         .then((profile) => {
-        //             userProfile = {
-        //                 userId: profile.userId,
-        //                 realName: userRealNames[profile.userId] || profile.displayName,
-        //                 pictureUrl: profile.pictureUrl,
-        //             };
-        //             document.getElementById("profileImage").src = profile.pictureUrl;
+        function runApp() {
+            liff
+                .getProfile()
+                .then((profile) => {
+                    userProfile = {
+                        userId: profile.userId,
+                        realName: userRealNames[profile.userId] || profile.displayName,
+                        pictureUrl: profile.pictureUrl,
+                    };
+                    document.getElementById("profileImage").src = profile.pictureUrl;
 
-        //             // Request location access
-        //             requestLocationAccess();
-        //         })
-        //         .catch((err) => console.error(err));
-        // }
+                    // Request location access
+                    requestLocationAccess();
+                })
+                .catch((err) => console.error(err));
+        }
 
         function requestLocationAccess() {
             if (navigator.geolocation) {
@@ -372,31 +372,31 @@
             const checkTimeKey = `checkTime_${currentDate}`;
 
 
-            // if (status === "เข้างาน" && getCookie(checkInKey)) {
-            //     Swal.fire({
-            //         icon: "warning",
-            //         title: "คุณได้บันทึกเข้างานแล้ว!",
-            //         text: "คุณสามารถบันทึกเข้างานได้เพียงครั้งเดียวต่อวัน",
-            //     });
-            //     return;
-            // }
+            if (status === "เข้างาน" && getCookie(checkInKey)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "คุณได้บันทึกเข้างานแล้ว!",
+                    text: "คุณสามารถบันทึกเข้างานได้เพียงครั้งเดียวต่อวัน",
+                });
+                return;
+            }
 
-            // if (status === "ออกงาน" && getCookie(checkOutKey)) {
-            //     Swal.fire({
-            //         icon: "warning",
-            //         title: "คุณได้บันทึกออกงานแล้ว!",
-            //         text: "คุณสามารถบันทึกออกงานได้เพียงครั้งเดียวต่อวัน",
-            //     });
-            //     return;
-            // }
-            // if (status === "ลางาน" && getCookie(checkLeaveKey)) {
-            //     Swal.fire({
-            //         icon: "warning",
-            //         title: "คุณได้บันทึกลางานแล้ว!",
-            //         text: "คุณสามารถบันทึกลางานได้เพียงครั้งเดียวต่อวัน",
-            //     });
-            //     return;
-            // }
+            if (status === "ออกงาน" && getCookie(checkOutKey)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "คุณได้บันทึกออกงานแล้ว!",
+                    text: "คุณสามารถบันทึกออกงานได้เพียงครั้งเดียวต่อวัน",
+                });
+                return;
+            }
+            if (status === "ลางาน" && getCookie(checkLeaveKey)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "คุณได้บันทึกลางานแล้ว!",
+                    text: "คุณสามารถบันทึกลางานได้เพียงครั้งเดียวต่อวัน",
+                });
+                return;
+            }
             
             if (status === "ลางาน") {
             Swal.fire({
@@ -647,19 +647,19 @@
             document.getElementById("currentTime").innerText = getCurrentTime();
         }, 1000);
 
-        // liff.init(
-        //     {
-        //         liffId: "2005415459-X9WEZE2o",
-        //     },
-        //     () => {
-        //         if (liff.isLoggedIn()) {
-        //             runApp();
-        //         } else {
-        //             liff.login();
-        //         }
-        //     },
-        //     (err) => console.error(err.code, err.message)
-        // );
+        liff.init(
+            {
+                liffId: "2005415459-X9WEZE2o",
+            },
+            () => {
+                if (liff.isLoggedIn()) {
+                    runApp();
+                } else {
+                    liff.login();
+                }
+            },
+            (err) => console.error(err.code, err.message)
+        );
 
         // Check if PDPA is accepted, if not show the modal
         window.addEventListener('load', () => {

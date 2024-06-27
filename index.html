@@ -467,7 +467,6 @@
                                 }).then((result) => {
                                     if (result.isConfirmed) {
                                         const leaveReason = result.value;
-                                        const leaveDuration = result.value;
                                         const distanceStatus = checkDistance();
                                         sendData(status, checkInKey, checkOutKey, checkLeaveKey, distanceStatus, leaveType, leaveReason, leaveDuration);
                                     }
